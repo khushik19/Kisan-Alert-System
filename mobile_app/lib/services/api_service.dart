@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Replace with your actual backend URL once teammates share it
-  static const String baseUrl = "http://YOUR_BACKEND_URL";
-  static const bool useMockData = true; // flip to false once backend is ready
+  // Pointing to our live localtunnel backend URL (expose with: npx localtunnel --port 8000)
+  static const String baseUrl = "https://wide-sites-bet.loca.lt";
+  static const bool useMockData = false; // Connected to real backend!
 
   static Future<Map<String, dynamic>> diagnose(File imageFile) async {
     if (useMockData) {

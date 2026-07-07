@@ -226,7 +226,16 @@ with st.sidebar.expander("🛠️ Mock Data Simulator", expanded=False):
     new_status = st.selectbox("Delivery Status", ["⏳ Pending", "✅ Sent"])
 
     if st.button("Simulate Query"):
-        new_id = f"Q-2026-{len(st.session_state.mock_queries) + 1:03d}"
+        if is_api_online:
+            try:
+                current_queries = requests.get(f"{api_endpoint}/queries", timeout=1.0).json()
+                next_num = len(current_queries) + 1
+            except Exception:
+                next_num = len(st.session_state.mock_queries) + 1
+        else:
+            next_num = len(st.session_state.mock_queries) + 1
+
+        new_id = f"Q-2026-{next_num:03d}"
         current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         
         img_urls = {
@@ -266,8 +275,16 @@ with st.sidebar.expander("🛠️ Mock Data Simulator", expanded=False):
             "status": new_status
         }
         
-        st.session_state.mock_queries.append(new_query)
-        st.toast(f"Simulated Query {new_id} added successfully.")
+        if is_api_online:
+            try:
+                requests.post(f"{api_endpoint}/queries", json=new_query, timeout=2.0)
+                st.toast(f"Simulated Query {new_id} pushed to backend successfully.")
+            except Exception as e:
+                st.session_state.mock_queries.append(new_query)
+                st.toast(f"Simulated Query {new_id} added locally (Backend post failed: {e}).")
+        else:
+            st.session_state.mock_queries.append(new_query)
+            st.toast(f"Simulated Query {new_id} added locally.")
 
 # Fetching Data: Attempt real API endpoint first, fallback to mock data (Step 4)
 if is_api_online:
