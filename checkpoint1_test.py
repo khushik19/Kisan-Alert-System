@@ -22,7 +22,7 @@ import requests
 # Load backend .env FIRST so GEMINI_API_KEY is in the environment
 # before vision_engine.py is imported (it reads the key at module level)
 from dotenv import load_dotenv
-_backend_env = os.path.join(os.path.dirname(__file__), "Achal", "backend", ".env")
+_backend_env = os.path.join(os.path.dirname(__file__), "backend", ".env")
 load_dotenv(_backend_env)
 
 
@@ -111,7 +111,7 @@ banner("STEP 3 — Person 2: Voice/SMS Layer (/send-advisory)")
 
 try:
     payload = {
-        "to":       "+910000000000",    # dummy number — Twilio will reject but endpoint still runs
+        "to":       "+916306154367",    # dummy number — Twilio will reject but endpoint still runs
         "advisory": advisory_text,
     }
     t0 = time.time()

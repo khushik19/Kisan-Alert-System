@@ -104,7 +104,7 @@ if __name__ == "__main__":
     # Load backend .env so the key is available when running standalone
     try:
         from dotenv import load_dotenv
-        backend_env = os.path.join(os.path.dirname(__file__), "Achal", "backend", ".env")
+        backend_env = os.path.join(os.path.dirname(__file__), "backend", ".env")
         if not os.path.exists(backend_env):
             backend_env = os.path.join(os.path.dirname(__file__), ".env")
         load_dotenv(backend_env)

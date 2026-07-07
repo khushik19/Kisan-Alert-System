@@ -197,12 +197,16 @@ st.sidebar.divider()
 
 # API Configuration and Status check (Step 4 Connection Handling)
 st.sidebar.subheader("🔌 API Configuration")
-api_endpoint = st.sidebar.text_input("Person 3 Orchestrator Endpoint", "http://localhost:8000")
+api_endpoint = st.sidebar.text_input("Person 3 Orchestrator Endpoint", "https://great-tiger-9.loca.lt")
 is_api_online = False
 
 try:
-    # Quick healthcheck request
-    test_res = requests.get(f"{api_endpoint}/queries", timeout=1.0)
+    # Quick healthcheck request — checking /health with landing page bypass header
+    test_res = requests.get(
+        f"{api_endpoint}/health",
+        headers={"bypass-tunnel-reminder": "true"},
+        timeout=1.5
+    )
     if test_res.status_code == 200:
         is_api_online = True
 except Exception:
@@ -228,7 +232,11 @@ with st.sidebar.expander("🛠️ Mock Data Simulator", expanded=False):
     if st.button("Simulate Query"):
         if is_api_online:
             try:
-                current_queries = requests.get(f"{api_endpoint}/queries", timeout=1.0).json()
+                current_queries = requests.get(
+                    f"{api_endpoint}/queries",
+                    headers={"bypass-tunnel-reminder": "true"},
+                    timeout=1.5
+                ).json()
                 next_num = len(current_queries) + 1
             except Exception:
                 next_num = len(st.session_state.mock_queries) + 1
@@ -277,7 +285,12 @@ with st.sidebar.expander("🛠️ Mock Data Simulator", expanded=False):
         
         if is_api_online:
             try:
-                requests.post(f"{api_endpoint}/queries", json=new_query, timeout=2.0)
+                requests.post(
+                    f"{api_endpoint}/queries",
+                    json=new_query,
+                    headers={"bypass-tunnel-reminder": "true"},
+                    timeout=2.5
+                )
                 st.toast(f"Simulated Query {new_id} pushed to backend successfully.")
             except Exception as e:
                 st.session_state.mock_queries.append(new_query)
@@ -289,7 +302,10 @@ with st.sidebar.expander("🛠️ Mock Data Simulator", expanded=False):
 # Fetching Data: Attempt real API endpoint first, fallback to mock data (Step 4)
 if is_api_online:
     try:
-        api_data = requests.get(f"{api_endpoint}/queries").json()
+        api_data = requests.get(
+            f"{api_endpoint}/queries",
+            headers={"bypass-tunnel-reminder": "true"}
+        ).json()
         df = pd.DataFrame(api_data)
     except Exception as e:
         df = pd.DataFrame(st.session_state.mock_queries)
@@ -459,9 +475,14 @@ with tab4:
                     status_block.markdown("⚡ *Connecting to Person 1's Live Diagnosis API...*")
                     progress_bar.progress(30)
                     try:
-                        # Post file to endpoint
-                        files = {"file": uploaded.getvalue()}
-                        res = requests.post(f"{api_endpoint}/diagnose", files=files, timeout=5.0)
+                        # Post file to endpoint — specifying filename and content type
+                        files = {"file": (uploaded.name, uploaded.getvalue(), uploaded.type)}
+                        res = requests.post(
+                            f"{api_endpoint}/diagnose",
+                            files=files,
+                            headers={"bypass-tunnel-reminder": "true"},
+                            timeout=15.0
+                        )
                         progress_bar.progress(80)
                         if res.status_code == 200:
                             result = res.json()

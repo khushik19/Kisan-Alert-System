@@ -305,10 +305,22 @@ async def diagnose(file: UploadFile = File(...)):
 
 
 # ---------------------------------------------------------------------------
-# GET /queries — return query history for the dashboard feed
+# GET & POST /queries — manage query history for the dashboard
 # ---------------------------------------------------------------------------
 @app.get("/queries")
 def queries():
     """Returns all logged queries (real + simulated) for the dashboard."""
     return query_log
+
+
+@app.post("/queries")
+async def add_query(request: Request):
+    """Allows the dashboard simulator to add new simulated queries into the feed."""
+    try:
+        query = await request.json()
+        query_log.append(query)
+        return {"status": "success", "added": query.get("query_id")}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
