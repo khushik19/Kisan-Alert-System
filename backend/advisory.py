@@ -61,28 +61,34 @@ def generate_advisory_text(
     weather: dict,
     crop_stage: str,
     gemini_api_key: str,
+    crop: str = "crop",
 ) -> dict:
     """
-    Call Gemini Flash to produce bilingual advisories (Hindi + English).
+    Call Gemini Flash to produce bilingual advisories (Hindi + English) + a tip.
 
-    Returns a dict: { "hindi": "...", "english": "..." }
+    Returns a dict: { "hindi": "...", "english": "...", "tip": "..." }
 
     Falls back to FALLBACK_ADVISORY (or generic messages) if the API
     call fails or returns an unusable response.
     """
-    prompt = f"""
-You are an agricultural advisor helping a farmer understand a crop disease.
+    # Use the actual crop name so the advisory is crop-specific
+    crop_label = crop.strip() if crop and crop.lower() not in ("crop", "unknown", "") else "your crop"
 
+    prompt = f"""
+You are an expert agricultural advisor helping a farmer understand a crop disease.
+
+Crop: {crop_label}
 Disease detected: {disease} (confidence: {confidence:.0%})
 Current weather: {weather['condition']}, {weather['temp']}°C, humidity {weather['humidity']}%
 Crop stage: {crop_stage}
 
-Give ONE short, clear, actionable advisory (maximum 2 sentences each) in BOTH languages:
-1. Simple spoken Hindi (no English words, easy for a rural farmer to understand)
-2. Clear English (for reference by extension workers or digital displays)
+Provide ALL THREE of the following:
+1. A short actionable advisory in simple spoken Hindi specifically mentioning the crop "{crop_label}" by name. No English words. Maximum 2 sentences.
+2. The same advisory clearly in English, also mentioning "{crop_label}" by name. Maximum 2 sentences.
+3. One short practical prevention tip in English that a farmer can follow to avoid this disease in the future. Maximum 1 sentence.
 
 Respond ONLY with valid JSON in exactly this format:
-{{"hindi": "<Hindi advisory here>", "english": "<English advisory here>"}}
+{{"hindi": "<Hindi advisory here>", "english": "<English advisory here>", "tip": "<Prevention tip here>"}}
 """.strip()
 
     last_exc = None
@@ -102,12 +108,13 @@ Respond ONLY with valid JSON in exactly this format:
             result = response.json()
             raw = result["candidates"][0]["content"]["parts"][0]["text"].strip()
             parsed = json.loads(raw)
-            hindi   = parsed.get("hindi", "").strip()
+            hindi   = parsed.get("hindi",   "").strip()
             english = parsed.get("english", "").strip()
+            tip     = parsed.get("tip",     "").strip()
             if len(hindi) < 5 or len(english) < 5:
                 raise ValueError("Gemini returned too-short advisory")
-            print(f"[advisory] Bilingual advisory generated with {model}")
-            return {"hindi": hindi, "english": english}
+            print(f"[advisory] Bilingual advisory + tip generated with {model}")
+            return {"hindi": hindi, "english": english, "tip": tip}
         except Exception as exc:
             print(f"[advisory] {model} failed ({exc}), trying next model...")
             last_exc = exc
@@ -116,13 +123,14 @@ Respond ONLY with valid JSON in exactly this format:
     # Try exact match first, then partial match, then generic
     fallback = FALLBACK_ADVISORY.get(disease.lower().strip())
     if fallback:
-        return fallback
+        return {**fallback, "tip": "Rotate crops and maintain field hygiene to prevent recurrence."}
     for key, val in FALLBACK_ADVISORY.items():
         if key in disease.lower():
-            return val
+            return {**val, "tip": "Rotate crops and maintain field hygiene to prevent recurrence."}
     return {
         "hindi":   "फसल में समस्या का पता चला है। कृपया नज़दीकी कृषि केंद्र से संपर्क करें।",
         "english": "A crop problem was detected. Please contact your nearest agriculture center.",
+        "tip":     "Regularly inspect leaves for early signs of disease and maintain proper field drainage.",
     }
 
 

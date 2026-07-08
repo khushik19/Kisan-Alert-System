@@ -504,9 +504,12 @@ with tab4:
                                 """)
                                 advisory_hi  = result.get('advisory_hindi',   result.get('advisory_text', ''))
                                 advisory_en  = result.get('advisory_english',  '')
+                                advisory_tip = result.get('tip', '')
                                 st.info(f"📢 **Hindi Advisory (for SMS/Voice):**\n\n🇮🇳 {advisory_hi}")
                                 if advisory_en:
                                     st.info(f"📢 **English Advisory (for Extension Workers):**\n\n🇬🇧 {advisory_en}")
+                                if advisory_tip:
+                                    st.success(f"💡 **AI Prevention Tip:**\n\n{advisory_tip}")
                         else:
                             status_block.error("Live API returned an invalid response code. Falling back to Sandbox Simulation.")
                             is_api_online = False

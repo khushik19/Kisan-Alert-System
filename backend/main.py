@@ -219,14 +219,17 @@ async def advisory(request: Request):
         weather=weather,
         crop_stage=stage_note,
         gemini_api_key=GEMINI_API_KEY,
+        crop=crop,
     )
     advisory_hindi   = advisory.get("hindi",   "")
     advisory_english = advisory.get("english", "")
+    advisory_tip     = advisory.get("tip",     "")
 
     return {
         "advisory_text":    advisory_hindi,   # kept for backward-compat (SMS/voice layer uses this)
         "advisory_hindi":   advisory_hindi,
         "advisory_english": advisory_english,
+        "tip":              advisory_tip,
         "language": "hi+en",
         "disease": disease,
         "crop": crop,
@@ -332,9 +335,11 @@ async def diagnose(file: UploadFile = File(...)):
         weather=weather,
         crop_stage=stage_note,
         gemini_api_key=GEMINI_API_KEY,
+        crop=crop,
     )
     advisory_hindi   = advisory.get("hindi",   "")
     advisory_english = advisory.get("english", "")
+    advisory_tip     = advisory.get("tip",     "")
 
     # Log to in-memory query store (dashboard reads this)
     entry = {
@@ -362,6 +367,7 @@ async def diagnose(file: UploadFile = File(...)):
         "advisory_text":    advisory_hindi,
         "advisory_hindi":   advisory_hindi,
         "advisory_english": advisory_english,
+        "tip":              advisory_tip,
         "weather":          weather,
     }
 
