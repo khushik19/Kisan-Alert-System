@@ -197,7 +197,7 @@ st.sidebar.divider()
 
 # API Configuration and Status check (Step 4 Connection Handling)
 st.sidebar.subheader("🔌 API Configuration")
-api_endpoint = st.sidebar.text_input("Person 3 Orchestrator Endpoint", "https://great-tiger-9.loca.lt")
+api_endpoint = st.sidebar.text_input("Person 3 Orchestrator Endpoint", "https://wide-sites-bet.loca.lt")
 is_api_online = False
 
 try:
