@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // Pointing to our live localtunnel backend URL (expose with: npx localtunnel --port 8000)
-  static const String baseUrl = "https://wide-sites-bet.loca.lt";
+  static const String baseUrl = "https://kisan-alert-backend.onrender.com";
   static const bool useMockData = false; // Connected to real backend!
 
   static Future<Map<String, dynamic>> diagnose(File imageFile) async {

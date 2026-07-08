@@ -65,7 +65,7 @@ Create a `.env` file in **`voice_telephony/`** folder:
 TWILIO_ACCOUNT_SID=your_twilio_account_sid
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
 TWILIO_FROM_NUMBER=your_twilio_virtual_phone_number
-ADVISORY_ENGINE_URL=https://wide-sites-bet.loca.lt/advisory
+ADVISORY_ENGINE_URL=https://kisan-alert-backend.onrender.com/advisory
 ADVISORY_TIMEOUT_SECONDS=10
 DEFAULT_CROP=rice
 DEFAULT_LOCATION=Indore
@@ -97,13 +97,14 @@ PORT=3000
 
 ---
 
-### Step 3: Expose the Backend Publicly (localtunnel)
+### Step 3: Expose the Backend Publicly (localtunnel — Optional)
 
-For the dashboard and mobile app to connect, expose port 8000 with localtunnel using our configured subdomain:
+If you want to run the backend locally on your system instead of using the cloud-deployed instance at `https://kisan-alert-backend.onrender.com`, you can expose port 8000 using localtunnel:
 ```bash
 npx -y localtunnel --port 8000 --subdomain wide-sites-bet
 ```
-*Note: This creates the public endpoint `https://wide-sites-bet.loca.lt/` used by other services.*
+*Note: This creates the public endpoint `https://wide-sites-bet.loca.lt/` which can be swapped in your config.*
+
 
 ---
 
