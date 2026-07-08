@@ -169,6 +169,10 @@ def _normalize(body: dict) -> tuple:
     )
 
 
+# Sentinel disease values that mean "no real diagnosis was made"
+_INVALID_DISEASES = {"api error", "unknown", "invalid image", "error", ""}
+
+
 # ---------------------------------------------------------------------------
 # POST /advisory - unified endpoint (accepts all three shapes)
 # ---------------------------------------------------------------------------
@@ -189,6 +193,16 @@ async def advisory(request: Request):
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
 
+    # --- Validation: reject sentinel / garbage disease names ---
+    if disease.strip().lower() in _INVALID_DISEASES:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Disease value '{disease}' is not a valid diagnosis. "
+                "Please submit a real crop image first."
+            ),
+        )
+
     # Step 2 - real weather
     try:
         weather = get_weather(DEMO_LAT, DEMO_LON, OPENWEATHER_API_KEY)
@@ -199,17 +213,21 @@ async def advisory(request: Request):
     stage_note = get_crop_stage_note(DEFAULT_STAGE)
 
     # Step 4 - Gemini advisory
-    advisory_text = generate_advisory_text(
+    advisory = generate_advisory_text(
         disease=disease,
         confidence=confidence,
         weather=weather,
         crop_stage=stage_note,
         gemini_api_key=GEMINI_API_KEY,
     )
+    advisory_hindi   = advisory.get("hindi",   "")
+    advisory_english = advisory.get("english", "")
 
     return {
-        "advisory_text": advisory_text,
-        "language": "hi",
+        "advisory_text":    advisory_hindi,   # kept for backward-compat (SMS/voice layer uses this)
+        "advisory_hindi":   advisory_hindi,
+        "advisory_english": advisory_english,
+        "language": "hi+en",
         "disease": disease,
         "crop": crop,
         "crop_stage": DEFAULT_STAGE,
@@ -259,18 +277,44 @@ async def diagnose(file: UploadFile = File(...)):
     except ImportError as e:
         raise HTTPException(status_code=500, detail=f"vision_engine import failed: {e}")
 
+    # Validate file is actually an image
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Uploaded file is not an image (got '{file.content_type}'). Please upload a JPG or PNG crop photo."
+        )
+
     # Open the uploaded image
     try:
         image_bytes = await file.read()
+        if len(image_bytes) == 0:
+            raise ValueError("Uploaded file is empty.")
         img = Image.open(io.BytesIO(image_bytes))
+        img.verify()  # Detect truncated/corrupt images early
+        img = Image.open(io.BytesIO(image_bytes))  # Re-open after verify (verify closes the file)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid image: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid image file: {e}")
 
     # Step 1 — Person 1 diagnosis
     diagnosis = diagnose_crop_image(img)
     disease    = diagnosis.get("disease_name", "Unknown")
     confidence = diagnosis.get("confidence", "Medium")
     crop       = diagnosis.get("crop_identified", DEMO_CROP)
+
+    # --- Guard: if vision_engine could not produce a real diagnosis, return error ---
+    if disease.strip().lower() in _INVALID_DISEASES:
+        return {
+            "error": True,
+            "disease": disease,
+            "message": (
+                "The AI could not identify a crop disease from this image. "
+                "Please upload a clear, well-lit photo of a crop leaf."
+            ),
+            "remedy": diagnosis.get("short_remedy", ""),
+            "advisory_hindi":   "स्पष्ट फसल की पत्ती की फोटो भेजें। इस छवि से रोग की पहचान नहीं हो सकी।",
+            "advisory_english": "Please send a clear photo of the crop leaf. Disease could not be identified from this image.",
+            "advisory_text":    "स्पष्ट फसल की पत्ती की फोटो भेजें। इस छवि से रोग की पहचान नहीं हो सकी।",
+        }
 
     # Step 2 — weather
     try:
@@ -282,13 +326,15 @@ async def diagnose(file: UploadFile = File(...)):
     stage_note = get_crop_stage_note(DEFAULT_STAGE)
 
     # Step 4 — Gemini advisory
-    advisory_text = generate_advisory_text(
+    advisory = generate_advisory_text(
         disease=disease,
         confidence=normalize_confidence(confidence),
         weather=weather,
         crop_stage=stage_note,
         gemini_api_key=GEMINI_API_KEY,
     )
+    advisory_hindi   = advisory.get("hindi",   "")
+    advisory_english = advisory.get("english", "")
 
     # Log to in-memory query store (dashboard reads this)
     entry = {
@@ -301,20 +347,22 @@ async def diagnose(file: UploadFile = File(...)):
         "disease":    disease,
         "confidence": str(confidence),
         "remedy":     diagnosis.get("short_remedy", ""),
-        "advisory":   advisory_text,
-        "language":   "Hindi",
+        "advisory":   advisory_hindi,
+        "language":   "Hindi + English",
         "delivery":   "Dashboard",
         "status":     "✅ Sent",
     }
     query_log.append(entry)
 
     return {
-        "disease":       disease,
-        "confidence":    confidence,
-        "crop":          crop,
-        "remedy":        diagnosis.get("short_remedy", ""),
-        "advisory":      advisory_text,
-        "weather":       weather,
+        "disease":          disease,
+        "confidence":       confidence,
+        "crop":             crop,
+        "remedy":           diagnosis.get("short_remedy", ""),
+        "advisory_text":    advisory_hindi,
+        "advisory_hindi":   advisory_hindi,
+        "advisory_english": advisory_english,
+        "weather":          weather,
     }
 
 

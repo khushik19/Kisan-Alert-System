@@ -488,12 +488,25 @@ with tab4:
                             result = res.json()
                             progress_bar.progress(100)
                             status_block.empty()
-                            st.success(f"🎉 **Diagnosis Success (API Connected)**")
-                            st.markdown(f"""
-                            * **Detected Disease:** `{result.get('disease', 'Unknown')}`
-                            * **Confidence Score:** `{result.get('confidence', 'N/A')}%`
-                            """)
-                            st.info(f"📢 **Outbound Advisory Advisory:**\n\n{result.get('advisory', 'No advisory text generated.')}")
+
+                            # Check if vision engine returned an error (no crop detected)
+                            if result.get("error"):
+                                st.warning(f"⚠️ **Could not identify disease:** {result.get('message', '')}")
+                                st.info(f"📢 **Advisory:** {result.get('advisory_hindi', result.get('advisory_text', ''))}")
+                            else:
+                                confidence_raw = result.get('confidence', 'N/A')
+                                st.success(f"🎉 **Diagnosis Success (Live AI)**")
+                                st.markdown(f"""
+                                * **Crop Identified:** `{result.get('crop', 'Unknown')}`
+                                * **Detected Disease:** `{result.get('disease', 'Unknown')}`
+                                * **Confidence Score:** `{confidence_raw}`
+                                * **Recommended Remedy:** {result.get('remedy', 'N/A')}
+                                """)
+                                advisory_hi  = result.get('advisory_hindi',   result.get('advisory_text', ''))
+                                advisory_en  = result.get('advisory_english',  '')
+                                st.info(f"📢 **Hindi Advisory (for SMS/Voice):**\n\n🇮🇳 {advisory_hi}")
+                                if advisory_en:
+                                    st.info(f"📢 **English Advisory (for Extension Workers):**\n\n🇬🇧 {advisory_en}")
                         else:
                             status_block.error("Live API returned an invalid response code. Falling back to Sandbox Simulation.")
                             is_api_online = False

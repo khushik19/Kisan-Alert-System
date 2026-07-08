@@ -1,7 +1,8 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 requests
 python-dotenv
 pillow
 python-multipart
+google-genai

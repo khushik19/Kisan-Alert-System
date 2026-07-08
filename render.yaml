@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: kisan-alert-system
+    runtime: python
+    rootDir: .
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: DEMO_LAT
+        value: "22.7196"
+      - key: DEMO_LON
+        value: "75.8577"
+      - key: DEMO_CROP
+        value: rice
