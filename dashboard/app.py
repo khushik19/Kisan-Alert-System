@@ -111,6 +111,8 @@ st.markdown("""
 
 # Initial Mock Dataset setup in st.session_state
 if "mock_queries" not in st.session_state:
+    # GitHub raw URLs for actual crop disease demo images
+    _IMG = "https://raw.githubusercontent.com/AchalG2380/Kisan-Alert-System/main/demo_images"
     st.session_state.mock_queries = [
         {
             "query_id": "Q-2026-001",
@@ -118,7 +120,7 @@ if "mock_queries" not in st.session_state:
             "timestamp": "2026-07-05 10:15",
             "crop": "Paddy (Rice)",
             "photo_desc": "Leaf exhibiting wavy yellowing along edges",
-            "photo_url": "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=300&q=80",
+            "photo_url": f"{_IMG}/rice-disease.jpg",
             "disease": "Bacterial Leaf Blight",
             "confidence": "94.5%",
             "remedy": "Spray Agrimycin-100 (0.2 g/L) + Copper Oxychloride (2.5 g/L) at 12-day intervals.",
@@ -133,7 +135,7 @@ if "mock_queries" not in st.session_state:
             "timestamp": "2026-07-05 10:32",
             "crop": "Wheat",
             "photo_desc": "Orange/brown powdery pustules on leaves",
-            "photo_url": "https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=300&q=80",
+            "photo_url": f"{_IMG}/Brown Leaf Spot_0.avif",
             "disease": "Brown Rust",
             "confidence": "89.2%",
             "remedy": "Spray Propiconazole 25 EC (Tilt) @ 1 ml/L of water.",
@@ -148,7 +150,7 @@ if "mock_queries" not in st.session_state:
             "timestamp": "2026-07-05 11:02",
             "crop": "Tomato",
             "photo_desc": "Dark concentric spots on older leaves",
-            "photo_url": "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=300&q=80",
+            "photo_url": f"{_IMG}/ricee.jpg",
             "disease": "Early Blight",
             "confidence": "91.8%",
             "remedy": "Apply Chlorothalonil @ 2 g/L or Mancozeb @ 2.5 g/L.",
@@ -163,7 +165,7 @@ if "mock_queries" not in st.session_state:
             "timestamp": "2026-07-05 11:15",
             "crop": "Corn (Maize)",
             "photo_desc": "Healthy green leaves without any lesions",
-            "photo_url": "https://images.unsplash.com/photo-1628352081506-83c4307476a8?auto=format&fit=crop&w=300&q=80",
+            "photo_url": f"{_IMG}/rice.jpg",
             "disease": "Healthy (No Disease)",
             "confidence": "98.1%",
             "remedy": "Maintain standard irrigation and nitrogen application. No disease treatment required.",
@@ -246,11 +248,12 @@ with st.sidebar.expander("🛠️ Mock Data Simulator", expanded=False):
         new_id = f"Q-2026-{next_num:03d}"
         current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         
+        _IMG = "https://raw.githubusercontent.com/AchalG2380/Kisan-Alert-System/main/demo_images"
         img_urls = {
-            "Blast / Blight": "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=300&q=80",
-            "Rust / Powdery": "https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=300&q=80",
-            "Sucking Pests": "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=300&q=80",
-            "Healthy": "https://images.unsplash.com/photo-1628352081506-83c4307476a8?auto=format&fit=crop&w=300&q=80"
+            "Blast / Blight": f"{_IMG}/rice-disease.jpg",
+            "Rust / Powdery":  f"{_IMG}/Brown Leaf Spot_0.avif",
+            "Sucking Pests":   f"{_IMG}/ricee.jpg",
+            "Healthy":         f"{_IMG}/rice.jpg",
         }
         
         remedies = {
