@@ -3,3 +3,5 @@ uvicorn
 pydantic
 requests
 python-dotenv
+pillow
+python-multipart

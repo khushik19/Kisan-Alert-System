@@ -89,7 +89,6 @@ PORT=3000
 3. Install dependencies:
    ```bash
    pip install -r requirements.txt
-   pip install pillow python-multipart
    ```
 4. Start the server on port 8000:
    ```bash
