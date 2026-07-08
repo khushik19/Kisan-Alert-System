@@ -218,11 +218,25 @@ async def advisory(request: Request):
 
 
 # ---------------------------------------------------------------------------
+# GET / — Welcome endpoint
+# ---------------------------------------------------------------------------
+@app.get("/")
+def read_root():
+    return {
+        "status": "active",
+        "service": "Kisan Alert Advisory Engine API",
+        "version": "1.2.1",
+        "message": "Welcome! The API is running. Check /health for status.",
+        "endpoints": ["/health", "/queries", "/diagnose", "/advisory"]
+    }
+
+
+# ---------------------------------------------------------------------------
 # GET /health
 # ---------------------------------------------------------------------------
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "kisan-alert-advisory-engine", "version": "1.2.0"}
+    return {"status": "ok", "service": "kisan-alert-advisory-engine", "version": "1.2.1"}
 
 
 # ---------------------------------------------------------------------------

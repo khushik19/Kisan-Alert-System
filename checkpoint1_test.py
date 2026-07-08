@@ -28,7 +28,7 @@ load_dotenv(_backend_env)
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-PERSON3_URL  = "http://localhost:8000"      # Local: http://localhost:8000 | Render: https://kisan-alert-backend.onrender.com
+PERSON3_URL  = "http://localhost:8000"      # Local: http://localhost:8000 | Render: https://kisan-alert-system.onrender.com
 PERSON2_URL  = "http://localhost:3000"      # Voice/SMS layer (Person 2)
 DEMO_IMAGES  = os.path.join(os.path.dirname(__file__), "demo_images")
 
